@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"image/jpeg"
 	"io"
@@ -15,7 +14,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/claudiodangelis/qrcp/qr"
 
@@ -153,23 +151,9 @@ func New(cfg *config.Config) (*Server, error) {
 	// Create a server
 	httpserver := &http.Server{
 		Addr: host,
-		TLSConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		},
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 	// Create channel to send message to stop server
 	app.stopChannel = make(chan bool)
-	// Create cookie used to verify request is coming from first client to connect
-	cookie := http.Cookie{Name: "qrcp", Value: ""}
 	// Gracefully shutdown when an OS signal is received or when "q" is pressed
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
@@ -180,45 +164,9 @@ func New(cfg *config.Config) (*Server, error) {
 	// The handler adds and removes from the sync.WaitGroup
 	// When the group is zero all requests are completed
 	// and the server is shutdown
-	var waitgroup sync.WaitGroup
-	waitgroup.Add(1)
-	var initCookie sync.Once
 	// Create handlers
 	// Send handler (sends file to caller)
 	http.HandleFunc("/send/"+path, func(w http.ResponseWriter, r *http.Request) {
-		if !cfg.KeepAlive && strings.HasPrefix(r.Header.Get("User-Agent"), "Mozilla") {
-			if cookie.Value == "" {
-				initCookie.Do(func() {
-					value, err := util.GetSessionID()
-					if err != nil {
-						log.Println("Unable to generate session ID", err)
-						app.stopChannel <- true
-						return
-					}
-					cookie.Value = value
-					http.SetCookie(w, &cookie)
-				})
-			} else {
-				// Check for the expected cookie and value
-				// If it is missing or doesn't match
-				// return a 400 status
-				rcookie, err := r.Cookie(cookie.Name)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				if rcookie.Value != cookie.Value {
-					http.Error(w, "mismatching cookie", http.StatusBadRequest)
-					return
-				}
-				// If the cookie exits and matches
-				// this is an aadditional request.
-				// Increment the waitgroup
-				waitgroup.Add(1)
-			}
-			// Remove connection from the waitgroup when done
-			defer waitgroup.Done()
-		}
 		w.Header().Set("Content-Disposition", "attachment; filename="+
 			app.payload.Filename)
 		http.ServeFile(w, r, app.payload.Path)
@@ -312,24 +260,9 @@ func New(cfg *config.Config) (*Server, error) {
 			serveTemplate("upload", pages.Upload, w, htmlVariables)
 		}
 	})
-	// Wait for all wg to be done, then send shutdown signal
 	go func() {
-		waitgroup.Wait()
-		if cfg.KeepAlive || !app.expectParallelRequests {
-			return
-		}
-		app.stopChannel <- true
-	}()
-	go func() {
-		netListener := tcpKeepAliveListener{listener.(*net.TCPListener)}
-		if cfg.Secure {
-			if err := httpserver.ServeTLS(netListener, cfg.TlsCert, cfg.TlsKey); err != http.ErrServerClosed {
-				log.Fatalln("error starting the server:", err)
-			}
-		} else {
-			if err := httpserver.Serve(netListener); err != http.ErrServerClosed {
-				log.Fatalln("error starting the server", err)
-			}
+		if err := httpserver.Serve(listener); err != http.ErrServerClosed {
+			log.Fatalln("error starting the server", err)
 		}
 	}()
 	app.instance = httpserver
