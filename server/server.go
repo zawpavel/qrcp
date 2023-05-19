@@ -15,11 +15,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/claudiodangelis/qrcp/qr"
-
 	"github.com/claudiodangelis/qrcp/config"
 	"github.com/claudiodangelis/qrcp/pages"
 	"github.com/claudiodangelis/qrcp/payload"
+	"github.com/claudiodangelis/qrcp/qr"
 	"github.com/claudiodangelis/qrcp/util"
 	"gopkg.in/cheggaaa/pb.v1"
 )
@@ -109,15 +108,18 @@ func New(cfg *config.Config) (*Server, error) {
 	if cfg.Bind != "" {
 		bind = cfg.Bind
 	}
-	// Create a listener. If `port: 0`, a random one is chosen
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", bind, cfg.Port))
+	// Create a server and a listener. If `port: 0`, a random one is chosen
+	srvAddr := ":0"
+	srv := &http.Server{Addr: srvAddr}
+	ln, err := net.Listen("tcp", srvAddr)
 	if err != nil {
 		return nil, err
 	}
 	// Set the value of computed port
-	port := listener.Addr().(*net.TCPAddr).Port
+	port := ln.Addr().(*net.TCPAddr).Port
+
 	// Set the host
-	host := fmt.Sprintf("%s:%d", bind, port)
+	// host := fmt.Sprintf("%s:%d", bind, port)
 	// Get a random path to use
 	path := cfg.Path
 	if path == "" {
@@ -144,14 +146,9 @@ func New(cfg *config.Config) (*Server, error) {
 		protocol = "https"
 	}
 	app.BaseURL = fmt.Sprintf("%s://%s", protocol, hostname)
-	app.SendURL = fmt.Sprintf("%s/send/%s",
-		app.BaseURL, path)
-	app.ReceiveURL = fmt.Sprintf("%s/receive/%s",
-		app.BaseURL, path)
-	// Create a server
-	httpserver := &http.Server{
-		Addr: host,
-	}
+	app.SendURL = fmt.Sprintf("%s/send/%s", app.BaseURL, path)
+	app.ReceiveURL = fmt.Sprintf("%s/receive/%s", app.BaseURL, path)
+
 	// Create channel to send message to stop server
 	app.stopChannel = make(chan bool)
 	// Gracefully shutdown when an OS signal is received or when "q" is pressed
@@ -167,8 +164,7 @@ func New(cfg *config.Config) (*Server, error) {
 	// Create handlers
 	// Send handler (sends file to caller)
 	http.HandleFunc("/send/"+path, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Disposition", "attachment; filename="+
-			app.payload.Filename)
+		w.Header().Set("Content-Disposition", "attachment; filename="+app.payload.Filename)
 		http.ServeFile(w, r, app.payload.Path)
 	})
 	// Upload handler (serves the upload page)
@@ -261,11 +257,11 @@ func New(cfg *config.Config) (*Server, error) {
 		}
 	})
 	go func() {
-		if err := httpserver.Serve(listener); err != http.ErrServerClosed {
-			log.Fatalln("error starting the server", err)
+		if err := srv.Serve(ln); err != nil {
+			log.Fatal(err)
 		}
 	}()
-	app.instance = httpserver
+	app.instance = srv
 	return app, nil
 }
 
