@@ -1,4 +1,4 @@
-module github.com/claudiodangelis/qrcp
+module github.com/zawpavel/qrcp
 
 go 1.14
 
