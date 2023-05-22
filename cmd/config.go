@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/claudiodangelis/qrcp/config"
 	"github.com/spf13/cobra"
+	"github.com/zawpavel/qrcp/config"
 )
 
 func configCmdFunc(command *cobra.Command, args []string) error {

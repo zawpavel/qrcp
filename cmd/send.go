@@ -3,14 +3,14 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/claudiodangelis/qrcp/config"
-	"github.com/claudiodangelis/qrcp/logger"
-	"github.com/claudiodangelis/qrcp/payload"
-	"github.com/claudiodangelis/qrcp/qr"
 	"github.com/eiannone/keyboard"
+	"github.com/zawpavel/qrcp/config"
+	"github.com/zawpavel/qrcp/logger"
+	"github.com/zawpavel/qrcp/payload"
+	"github.com/zawpavel/qrcp/qr"
 
-	"github.com/claudiodangelis/qrcp/server"
 	"github.com/spf13/cobra"
+	"github.com/zawpavel/qrcp/server"
 )
 
 func sendCmdFunc(command *cobra.Command, args []string) error {

@@ -10,10 +10,10 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/asaskevich/govalidator"
-	"github.com/claudiodangelis/qrcp/application"
-	"github.com/claudiodangelis/qrcp/util"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/viper"
+	"github.com/zawpavel/qrcp/application"
+	"github.com/zawpavel/qrcp/util"
 )
 
 type Config struct {

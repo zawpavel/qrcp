@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/adrg/xdg"
-	"github.com/claudiodangelis/qrcp/application"
+	"github.com/zawpavel/qrcp/application"
 	"gopkg.in/yaml.v2"
 )
 

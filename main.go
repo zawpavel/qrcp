@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/claudiodangelis/qrcp/cmd"
+	"github.com/zawpavel/qrcp/cmd"
 )
 
 func main() {

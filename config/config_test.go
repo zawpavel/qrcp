@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/claudiodangelis/qrcp/application"
+	"github.com/zawpavel/qrcp/application"
 )
 
 func TestNew(t *testing.T) {

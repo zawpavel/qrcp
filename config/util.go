@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/claudiodangelis/qrcp/application"
-	"github.com/claudiodangelis/qrcp/util"
 	"github.com/manifoldco/promptui"
+	"github.com/zawpavel/qrcp/application"
+	"github.com/zawpavel/qrcp/util"
 )
 
 func chooseInterface(flags application.Flags) (string, error) {

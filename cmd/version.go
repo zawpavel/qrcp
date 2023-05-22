@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/claudiodangelis/qrcp/version"
 	"github.com/spf13/cobra"
+	"github.com/zawpavel/qrcp/version"
 )
 
 var versionCmd = &cobra.Command{

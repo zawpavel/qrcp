@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/claudiodangelis/qrcp/application"
 	"github.com/spf13/cobra"
+	"github.com/zawpavel/qrcp/application"
 )
 
 var app application.App

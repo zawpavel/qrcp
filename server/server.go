@@ -15,11 +15,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/claudiodangelis/qrcp/config"
-	"github.com/claudiodangelis/qrcp/pages"
-	"github.com/claudiodangelis/qrcp/payload"
-	"github.com/claudiodangelis/qrcp/qr"
-	"github.com/claudiodangelis/qrcp/util"
+	"github.com/zawpavel/qrcp/config"
+	"github.com/zawpavel/qrcp/pages"
+	"github.com/zawpavel/qrcp/payload"
+	"github.com/zawpavel/qrcp/qr"
+	"github.com/zawpavel/qrcp/util"
 	"gopkg.in/cheggaaa/pb.v1"
 )
 

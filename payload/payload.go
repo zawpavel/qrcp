@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/claudiodangelis/qrcp/util"
+	"github.com/zawpavel/qrcp/util"
 )
 
 // Payload to transfer
