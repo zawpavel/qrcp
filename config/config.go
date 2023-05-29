@@ -94,18 +94,13 @@ func New(app application.App) Config {
 		cfg.Output = app.Flags.Output
 	}
 
-	// Discover interface if it's not been set yet
-	if !interactive {
-		if cfg.Interface == "" {
-			cfg.Interface, err = chooseInterface(app.Flags)
-			if err != nil {
-				panic(err)
-			}
-			v.Set("interface", cfg.Interface)
-			if err := v.WriteConfig(); err != nil {
-				panic(err)
-			}
-		}
+	cfg.Interface, err = chooseInterface(app.Flags)
+	if err != nil {
+		panic(err)
+	}
+	v.Set("interface", cfg.Interface)
+	if err := v.WriteConfig(); err != nil {
+		panic(err)
 	}
 
 	return cfg

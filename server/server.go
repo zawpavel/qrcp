@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"image/jpeg"
 	"io"
@@ -76,17 +75,8 @@ func (s *Server) DisplayQR(url string) {
 	openBrowser(s.BaseURL + PATH)
 }
 
-// Wait for transfer to be completed, it waits forever if kept awlive
 func (s Server) Wait() error {
 	<-s.stopChannel
-	if err := s.instance.Shutdown(context.Background()); err != nil {
-		log.Println(err)
-	}
-	if s.payload.DeleteAfterTransfer {
-		if err := s.payload.Delete(); err != nil {
-			panic(err)
-		}
-	}
 	return nil
 }
 
