@@ -1,18 +1,18 @@
 package util
 
 import (
+	"errors"
 	"net"
 	"regexp"
 
 	externalip "github.com/glendc/go-external-ip"
 )
 
-// Interfaces returns a `name:ip` map of the suitable interfaces found
-func Interfaces(listAll bool) (map[string]string, error) {
-	names := make(map[string]string)
+// GetInterface returns a `name` string of the suitable interface found
+func GetInterface(listAll bool) (string, error) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return names, err
+		return "", err
 	}
 	var re = regexp.MustCompile(`^(veth|br\-|docker|lo|EHC|XHC|bridge|gif|stf|p2p|awdl|utun|tun|tap)`)
 	for _, iface := range ifaces {
@@ -26,9 +26,12 @@ func Interfaces(listAll bool) (map[string]string, error) {
 		if err != nil {
 			continue
 		}
-		names[iface.Name] = ip
+		if ip == "127.0.0.1" {
+			continue
+		}
+		return iface.Name, nil
 	}
-	return names, nil
+	return "", errors.New("no interfaces found")
 }
 
 // GetExernalIP of this host
